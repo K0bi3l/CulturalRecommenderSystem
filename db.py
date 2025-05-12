@@ -1,11 +1,12 @@
 from collections import Counter
+
 event_types = ["music", "fine dining", "jam session", "painting", "sport", "travel", "stand up", "tech", "prelection"]
 
 
 class Event:
     def __init__(self, name, event_type, price, distance, popularity, description, event_length, start_hour):
         self.name = name
-        self.event_type = event_type
+        self.type = event_type
         self.price = price
         self.distance = distance
         self.popularity = popularity
@@ -19,25 +20,26 @@ class Event:
 
 
 class User:
-    def __init__(self, event_list=None):
-        self.events = event_list if event_list is not None else []
-        if event_list is not None:
-            self.update()
-            return
-        self.mean_price = 0
-        self.mean_distance = 0
-        self.mean_popularity = 0
-        self.types = None,
+    def __init__(self, events, text_profile_descriptions):
+        self.description = None
+        self.mean_popularity = None
+        self.mean_distance = None
+        self.mean_price = None
+        self.events = events
+        self.update()
+        self.text_profile_descriptions = text_profile_descriptions
 
     def update(self):
-        self.mean_price = sum(event.price for event in self.events) / len(self.events)
-        self.mean_distance = sum(event.distance for event in self.events) / len(self.events)
-        self.mean_popularity = sum(event.popularity for event in self.events) / len(self.events)
-        self.types = Counter(event.type for event in self.events).most_common(3)
+        self.mean_price = sum(e.price for e in self.events) / len(self.events)
+        self.mean_distance = sum(e.distance for e in self.events) / len(self.events)
+        self.mean_popularity = sum(e.popularity for e in self.events) / len(self.events)
 
-    def append_event(self,event):
+    def append_event(self, event):
         self.events.append(event)
         self.update()
+
+    def update_description(self, description):
+        self.description = description
 
 
 class Preferences:
