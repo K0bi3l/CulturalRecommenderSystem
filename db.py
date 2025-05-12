@@ -9,10 +9,10 @@ class Event:
         self.price = price
         self.distance = distance
         self.popularity = popularity
-        self.type = event_type
         self.description = description
         self.event_length = event_length
         self.start_hour = start_hour
+        self.score = 0
 
     def get_vector(self):
         return [self.price, self.distance, self.popularity]
@@ -40,12 +40,36 @@ class User:
         self.update()
 
 
-events = [
-    Event('event1', 'music', 100, 10, 20),
-    Event('event2', 'sport', 200, 20, 100)
-]
+class Preferences:
+    def __init__(self):
+        # Maximum distance in km
+        self.max_distance = 15
+        # List of preferred categories with weights  e.g. {"music": 0.8, "jam session": 0.6}
+        self.categories = {}
+        # List of (start_time, length)
+        self.preferred_times = []
+        # List of preferred price for category e.g. {"music": 50}
+        self.budget_for_category = {}
+        # List of earlier events
+        self.attended_events = []
 
-users = [
-   User([events[0]]),
-   User([events[1]]),
-]
+    def is_in_preferred_time(self, event_start, event_length):
+        # Proper overlap check
+        from datetime import timedelta
+        event_end = event_start + timedelta(hours=event_length)
+        for start, length in self.preferred_times:
+            pref_end = start + timedelta(hours=length)
+            if start < event_end and event_start < pref_end:
+                return True
+        return False
+
+    def get_attended_category_counts(self):
+        """Returns a Counter of attended event categories."""
+        return Counter(event.type for event in self.attended_events)
+
+    def add_attended_event(self, event):
+        if event not in self.attended_events:
+            self.attended_events.append(event)
+
+    def get_category_interest(self, category):
+        return self.categories.get(category, 0)
