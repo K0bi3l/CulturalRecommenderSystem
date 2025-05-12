@@ -1,15 +1,17 @@
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
-from FuzzyScorer import FuzzyScorer
-from db import User, Preferences, Event
+import FuzzyScorer
+from db import Event, User, Preferences
 from datetime import datetime, timedelta
-from sklearn.feature_extraction.text import TfidfVectorizer
 
+# Optional: for text vectorization
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 class FuzzySystem:
     def __init__(self):
-        self.price_match = ctrl.Antecedent(np.arange(0, 501, 1), 'price_match')
+        # Define universes
+        self.price_match = ctrl.Antecedent(np.arange(0, 101, 1), 'price_match')
         self.distance_match = ctrl.Antecedent(np.arange(0, 101, 1), 'distance_match')
         self.popularity_range = ctrl.Antecedent(np.arange(0, 101, 1), 'popularity_range')
         self.interest_match = ctrl.Antecedent(np.arange(0, 101, 1), 'interest_match')
@@ -20,101 +22,111 @@ class FuzzySystem:
         self.create_sets()
         self.create_rules()
 
+        # Create control system
         self.system = ctrl.ControlSystem(self.rules)
         self.simulator = ctrl.ControlSystemSimulation(self.system)
 
     def create_sets(self):
+        # Define membership functions
         self.price_match['low'] = fuzz.trimf(self.price_match.universe, [0, 0, 40])
         self.price_match['medium'] = fuzz.trimf(self.price_match.universe, [20, 50, 80])
-        self.price_match['high'] = fuzz.trimf(self.price_match.universe, [70, 100, 100])
+        self.price_match['high'] = fuzz.trimf(self.price_match.universe, [60, 100, 100])
 
         self.distance_match['low'] = fuzz.trimf(self.distance_match.universe, [0, 0, 40])
         self.distance_match['medium'] = fuzz.trimf(self.distance_match.universe, [20, 50, 80])
-        self.distance_match['high'] = fuzz.trimf(self.distance_match.universe, [70, 100, 100])
+        self.distance_match['high'] = fuzz.trimf(self.distance_match.universe, [60, 100, 100])
 
         self.popularity_range['low'] = fuzz.trimf(self.popularity_range.universe, [0, 0, 40])
         self.popularity_range['medium'] = fuzz.trimf(self.popularity_range.universe, [20, 50, 80])
-        self.popularity_range['high'] = fuzz.trimf(self.popularity_range.universe, [70, 100, 100])
+        self.popularity_range['high'] = fuzz.trimf(self.popularity_range.universe, [60, 100, 100])
 
         self.interest_match['low'] = fuzz.trimf(self.interest_match.universe, [0, 0, 40])
         self.interest_match['medium'] = fuzz.trimf(self.interest_match.universe, [20, 50, 80])
-        self.interest_match['high'] = fuzz.trimf(self.interest_match.universe, [70, 100, 100])
+        self.interest_match['high'] = fuzz.trimf(self.interest_match.universe, [60, 100, 100])
 
         self.start_hour_match['low'] = fuzz.trimf(self.start_hour_match.universe, [0, 0, 40])
         self.start_hour_match['medium'] = fuzz.trimf(self.start_hour_match.universe, [20, 50, 80])
-        self.start_hour_match['high'] = fuzz.trimf(self.start_hour_match.universe, [70, 100, 100])
+        self.start_hour_match['high'] = fuzz.trimf(self.start_hour_match.universe, [60, 100, 100])
 
         self.length_match['low'] = fuzz.trimf(self.length_match.universe, [0, 0, 40])
         self.length_match['medium'] = fuzz.trimf(self.length_match.universe, [20, 50, 80])
-        self.length_match['high'] = fuzz.trimf(self.length_match.universe, [70, 100, 100])
+        self.length_match['high'] = fuzz.trimf(self.length_match.universe, [60, 100, 100])
 
+        # Define the output membership functions
         self.recommendation_match['low'] = fuzz.trimf(self.recommendation_match.universe, [0, 0, 40])
         self.recommendation_match['medium'] = fuzz.trimf(self.recommendation_match.universe, [20, 50, 80])
-        self.recommendation_match['high'] = fuzz.trimf(self.recommendation_match.universe, [70, 100, 100])
+        self.recommendation_match['high'] = fuzz.trimf(self.recommendation_match.universe, [60, 100, 100])
 
     def create_rules(self):
+        # Create fuzzy rules
         self.rules = [
+            # High recommendation rules
             ctrl.Rule(
-                self.price_match['high'] & self.distance_match['high'] & self.popularity_range['high'] &
-                self.interest_match['high'] & self.start_hour_match['high'] & self.length_match['high'],
+                (self.price_match['high'] & self.distance_match['high'] & self.interest_match['high']),
                 self.recommendation_match['high']
             ),
             ctrl.Rule(
-                self.price_match['high'] & self.distance_match['high'] & self.popularity_range['medium'] &
-                self.interest_match['high'] & self.start_hour_match['high'] & self.length_match['high'],
+                (self.price_match['high'] & self.popularity_range['high'] & self.interest_match['high']),
                 self.recommendation_match['high']
             ),
             ctrl.Rule(
-                self.price_match['high'] & self.distance_match['medium'] & self.popularity_range['high'] &
-                self.interest_match['high'] & self.start_hour_match['high'] & self.length_match['high'],
-                self.recommendation_match['high']
-            ),
-            ctrl.Rule(
-                self.price_match['high'] & self.distance_match['high'] & self.popularity_range['high'] &
-                self.interest_match['high'] & self.start_hour_match['medium'] & self.length_match['high'],
+                (self.interest_match['high'] & self.start_hour_match['high'] & self.length_match['high']),
                 self.recommendation_match['high']
             ),
 
+            # Medium recommendation rules
             ctrl.Rule(
-                self.price_match['medium'] & self.distance_match['medium'] & self.interest_match['medium'],
+                (self.price_match['medium'] | self.distance_match['medium']) & self.interest_match['medium'],
                 self.recommendation_match['medium']
             ),
             ctrl.Rule(
-                self.start_hour_match['high'] & self.length_match['medium'] & self.popularity_range['medium'],
+                self.interest_match['high'] & (self.price_match['low'] | self.distance_match['low']),
                 self.recommendation_match['medium']
             ),
             ctrl.Rule(
-                self.price_match['high'] & self.popularity_range['high'] & self.interest_match['medium'],
+                (self.popularity_range['medium'] | self.length_match['medium']) & self.interest_match['medium'],
                 self.recommendation_match['medium']
-            ),
-            ctrl.Rule(
-                self.interest_match['high'] & self.length_match['medium'] & self.popularity_range['low'] &
-                self.price_match['medium'], self.recommendation_match['medium']
             ),
 
+            # Low recommendation rules
             ctrl.Rule(
-                self.price_match['low'] & self.distance_match['low'] & self.popularity_range['low'] &
-                self.interest_match['low'] & self.start_hour_match['low'] & self.length_match['low'],
+                self.interest_match['low'] & self.price_match['low'],
                 self.recommendation_match['low']
             ),
             ctrl.Rule(
-                self.price_match['low'] & self.distance_match['medium'] & self.popularity_range['low'] &
-                self.interest_match['low'] & self.start_hour_match['low'] & self.length_match['low'],
+                self.interest_match['low'] & self.distance_match['low'],
                 self.recommendation_match['low']
             ),
+            # Add a "catch-all" rule for when no other rules fire
+            ctrl.Rule(
+                ~self.interest_match['high'] & ~self.interest_match['medium'],
+                self.recommendation_match['low']
+            )
         ]
 
     def makeRecommendation(self, price, distance, popularity, interest, start_hour, length):
-        self.simulator.input['price_match'] = price
-        self.simulator.input['distance_match'] = distance
-        self.simulator.input['popularity_range'] = popularity
-        self.simulator.input['interest_match'] = interest
-        self.simulator.input['start_hour_match'] = start_hour
-        self.simulator.input['length_match'] = length
+        try:
+            # Ensure values are within range
+            self.simulator.input['price_match'] = min(100, max(0, price))
+            self.simulator.input['distance_match'] = min(100, max(0, distance))
+            self.simulator.input['popularity_range'] = min(100, max(0, popularity))
+            self.simulator.input['interest_match'] = min(100, max(0, interest))
+            self.simulator.input['start_hour_match'] = min(100, max(0, start_hour))
+            self.simulator.input['length_match'] = min(100, max(0, length))
 
-        self.simulator.compute()
-        print(f"Output: {self.simulator.output.keys()}")
-        return self.simulator.output['recommendation_match']
+            # Compute the result
+            self.simulator.compute()
+
+            # Check if recommendation_match is in the output
+            if 'recommendation_match' not in self.simulator.output:
+                print("Warning: No rules were activated. Using default score of 50.")
+                return 50.0
+
+            return self.simulator.output['recommendation_match']
+        except Exception as e:
+            print(f"Error in fuzzy computation: {e}")
+            # Return a default score on error
+            return 50.0
 
 
 past = [
@@ -154,7 +166,7 @@ print(f"  Categories: {prefs.categories}")
 print(f"  Preferred Times: {prefs.preferred_times}")
 print(f"  Budget for Category: {prefs.budget_for_category}\n")
 
-scorer = FuzzyScorer(user, prefs, text_vectorizer=vectorizer, user_text_profile=user_text_profile)
+scorer = FuzzyScorer.FuzzyScorer(user, prefs, text_vectorizer=vectorizer, user_text_profile=user_text_profile)
 for evt in new_events:
     print(f"Event: {evt.name}")
     print(f"  Description: {evt.description}")
@@ -170,5 +182,5 @@ for evt in new_events:
         start_hour=scores["start_hour"] * 100,
         length=scores["length"] * 100,
     )
-    print(f"  Final Recommendation Score: {final_score:.2f}")
+    print(final_score)
     print()
