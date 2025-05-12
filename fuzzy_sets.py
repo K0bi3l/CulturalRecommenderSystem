@@ -12,7 +12,7 @@ popularity_range = ctrl.Antecedent(popularity_range, 'popularity_range')
 
 price_range['low'] = fuzz.trimf(price_range.universe, [0, 0, 100])
 price_range['medium'] = fuzz.trimf(price_range.universe, [80, 150, 500])
-price_range['high'] = fuzz.sigmf(price_range.universe,500,0.02)
+price_range['high'] = fuzz.sigmf(price_range.universe,500, 0.02)
 
 distance_range['near'] = fuzz.trimf(distance_range.universe, [0, 0, 50])
 distance_range['medium'] = fuzz.dsigmf(distance_range.universe,75,0.1,150,0.1)
