@@ -3,13 +3,19 @@ event_types = ["music", "fine dining", "jam session", "painting", "sport", "trav
 
 
 class Event:
-    def __init__(self, name, event_type, price, distance, popularity):
+    def __init__(self, name, event_type, price, distance, popularity, description, event_length, start_hour):
         self.name = name
         self.event_type = event_type
         self.price = price
         self.distance = distance
         self.popularity = popularity
         self.type = event_type
+        self.description = description
+        self.event_length = event_length
+        self.start_hour = start_hour
+
+    def get_vector(self):
+        return [self.price, self.distance, self.popularity]
 
 
 class User:
