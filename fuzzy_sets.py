@@ -9,13 +9,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 class FuzzySystem:
     def __init__(self):
-        self.price_match = ctrl.Antecedent(np.arange(0, 101, 1), 'price_match')
-        self.distance_match = ctrl.Antecedent(np.arange(0, 101, 1), 'distance_match')
-        self.popularity_range = ctrl.Antecedent(np.arange(0, 101, 1), 'popularity_range')
-        self.interest_match = ctrl.Antecedent(np.arange(0, 101, 1), 'interest_match')
-        self.start_hour_match = ctrl.Antecedent(np.arange(0, 101, 1), 'start_hour_match')
-        self.length_match = ctrl.Antecedent(np.arange(0, 101, 1), 'length_match')
-        self.recommendation_match = ctrl.Consequent(np.arange(0, 101, 1), 'recommendation_match')
+        self.price_match = ctrl.Antecedent(np.arange(0, 1.01, 0.01), 'price_match')
+        self.distance_match = ctrl.Antecedent(np.arange(0, 1.01, 0.01), 'distance_match')
+        self.popularity_range = ctrl.Antecedent(np.arange(0, 1.01, 0.01), 'popularity_range')
+        self.interest_match = ctrl.Antecedent(np.arange(0, 1.01, 0.01), 'interest_match')
+        self.start_hour_match = ctrl.Antecedent(np.arange(0, 1.01, 0.01), 'start_hour_match')
+        self.length_match = ctrl.Antecedent(np.arange(0, 1.01, 0.01), 'length_match')
+        self.recommendation_match = ctrl.Consequent(np.arange(0, 1.01, 0.01), 'recommendation_match')
 
         self.create_sets()
         self.create_rules()
@@ -24,33 +24,33 @@ class FuzzySystem:
         self.simulator = ctrl.ControlSystemSimulation(self.system)
 
     def create_sets(self):
-        self.price_match['low'] = fuzz.trimf(self.price_match.universe, [0, 0, 40])
-        self.price_match['medium'] = fuzz.trimf(self.price_match.universe, [20, 50, 80])
-        self.price_match['high'] = fuzz.trimf(self.price_match.universe, [65, 100, 100])
+        self.price_match['low'] = fuzz.trimf(self.price_match.universe, [0, 0, 0.4])
+        self.price_match['medium'] = fuzz.trimf(self.price_match.universe, [0.2, 0.5, 0.8])
+        self.price_match['high'] = fuzz.trimf(self.price_match.universe, [0.65, 1, 1])
 
-        self.distance_match['low'] = fuzz.trimf(self.distance_match.universe, [0, 0, 40])
-        self.distance_match['medium'] = fuzz.trimf(self.distance_match.universe, [20, 50, 80])
-        self.distance_match['high'] = fuzz.trimf(self.distance_match.universe, [65, 100, 100])
+        self.distance_match['low'] = fuzz.trimf(self.distance_match.universe, [0, 0, 0.4])
+        self.distance_match['medium'] = fuzz.trimf(self.distance_match.universe, [0.2, 0.5, 0.8])
+        self.distance_match['high'] = fuzz.trimf(self.distance_match.universe, [0.65, 1, 1])
 
-        self.popularity_range['low'] = fuzz.trimf(self.popularity_range.universe, [0, 0, 40])
-        self.popularity_range['medium'] = fuzz.trimf(self.popularity_range.universe, [20, 50, 80])
-        self.popularity_range['high'] = fuzz.trimf(self.popularity_range.universe, [65, 100, 100])
+        self.popularity_range['low'] = fuzz.trimf(self.popularity_range.universe, [0, 0, 0.4])
+        self.popularity_range['medium'] = fuzz.trimf(self.popularity_range.universe, [0.2, 0.5, 0.8])
+        self.popularity_range['high'] = fuzz.trimf(self.popularity_range.universe, [0.65, 1, 1])
 
-        self.interest_match['low'] = fuzz.trimf(self.interest_match.universe, [0, 0, 40])
-        self.interest_match['medium'] = fuzz.trimf(self.interest_match.universe, [20, 50, 80])
-        self.interest_match['high'] = fuzz.trimf(self.interest_match.universe, [65, 100, 100])
+        self.interest_match['low'] = fuzz.trimf(self.interest_match.universe, [0, 0, 0.4])
+        self.interest_match['medium'] = fuzz.trimf(self.interest_match.universe, [0.2, 0.5, 0.8])
+        self.interest_match['high'] = fuzz.trimf(self.interest_match.universe, [0.65, 1, 1])
 
-        self.start_hour_match['low'] = fuzz.trimf(self.start_hour_match.universe, [0, 0, 40])
-        self.start_hour_match['medium'] = fuzz.trimf(self.start_hour_match.universe, [20, 50, 80])
-        self.start_hour_match['high'] = fuzz.trimf(self.start_hour_match.universe, [65, 100, 100])
+        self.start_hour_match['low'] = fuzz.trimf(self.start_hour_match.universe, [0, 0, 0.4])
+        self.start_hour_match['medium'] = fuzz.trimf(self.start_hour_match.universe, [0.2, 0.5, 0.8])
+        self.start_hour_match['high'] = fuzz.trimf(self.start_hour_match.universe, [0.65, 1, 1])
 
-        self.length_match['low'] = fuzz.trimf(self.length_match.universe, [0, 0, 40])
-        self.length_match['medium'] = fuzz.trimf(self.length_match.universe, [20, 50, 80])
-        self.length_match['high'] = fuzz.trimf(self.length_match.universe, [70, 100, 100])
+        self.length_match['low'] = fuzz.trimf(self.length_match.universe, [0, 0, 0.4])
+        self.length_match['medium'] = fuzz.trimf(self.length_match.universe, [0.2, 0.5, 0.8])
+        self.length_match['high'] = fuzz.trimf(self.length_match.universe, [0.65, 1, 1])
 
-        self.recommendation_match['low'] = fuzz.trimf(self.recommendation_match.universe, [0, 10, 40])
-        self.recommendation_match['medium'] = fuzz.trimf(self.recommendation_match.universe, [20, 50, 80])
-        self.recommendation_match['high'] = fuzz.trimf(self.recommendation_match.universe, [70, 90, 100])
+        self.recommendation_match['low'] = fuzz.trimf(self.recommendation_match.universe, [0, 0.1, 0.4])
+        self.recommendation_match['medium'] = fuzz.trimf(self.recommendation_match.universe, [0.2, 0.5, 0.8])
+        self.recommendation_match['high'] = fuzz.trimf(self.recommendation_match.universe, [0.7, 0.9, 1])
 
     def create_rules(self):
         self.rules = [
@@ -170,7 +170,7 @@ user_text_profile = tfidf_matrix.mean(axis=0).A1  # 1D numpy array
 new_events = [
     Event("Jazz Night", "music", 45, 3, 75, "Smooth jazz evening with mellow tunes", 2,
           datetime.now().replace(hour=18)),
-    Event("AI Meetup", "tech", 0, 0, 100, "Discuss AI trends and machine learning insights", 1,
+    Event("AI Meetup", "tech", 3, 0, 150, "Discuss AI trends and machine learning insights", 0.5,
           datetime.now().replace(hour=18))
 ]
 
@@ -184,12 +184,12 @@ for evt in new_events:
     print(scores)
 
     final_score = FuzzySystem().makeRecommendation(
-        price=100,
-        distance=100,
-        popularity=50,
-        interest=100,
-        start_hour=90,
-        length=100,
+        price=1,
+        distance=0.5,
+        popularity=0.50,
+        interest=1,
+        start_hour=0.90,
+        length=1,
     )
     print(f"  Final Recommendation Score: {final_score}")
     print()
