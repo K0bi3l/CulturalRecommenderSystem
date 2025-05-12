@@ -170,6 +170,5 @@ for evt in new_events:
         start_hour=scores["start_hour"] * 100,
         length=scores["length"] * 100,
     )
-    for k, v in final_score.items():
-        print(f"  {k}: {v:.2f}")
+    print(f"  Final Recommendation Score: {final_score:.2f}")
     print()
