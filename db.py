@@ -19,9 +19,9 @@ class Event:
 
 
 class User:
-    def __init__(self,event_list=None):
+    def __init__(self, event_list=None):
         self.events = event_list if event_list is not None else []
-        if(event_list is not None):
+        if event_list is not None:
             self.update()
             return
         self.mean_price = 0
