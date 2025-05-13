@@ -28,14 +28,8 @@ prefs = Preferences(
     categories={"music": 0.9, "tech": 0.6, "science": 1.0},  # High interest in music, some in tech
     preferred_times=preferred_times,
     budget=100,  # Budget constraints
-    attended_events=[past[0]]  # Already attended "Concert A"
 )
-prefs.attended_events.append(past[0])
 
-# Text vectorizer & profile
-vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform(user.text_profile_descriptions)
-user_text_profile = tfidf_matrix.mean(axis=0).A1  # 1D numpy array
 
 new_events = [
     Event("Jazz Night", "music", 45, 3, 75, "Smooth jazz evening with mellow tunes", 2,
@@ -76,7 +70,7 @@ def display_event_tiles(events):
     )
 
     # Scorer setup
-    scorer = FuzzyScorer.FuzzyScorer(user, prefs, text_vectorizer=vectorizer, user_text_profile=user_text_profile)
+    scorer = FuzzyScorer.FuzzyScorer(user, prefs)
 
     for event in events:
         st.markdown(f"""
@@ -93,7 +87,7 @@ def display_event_tiles(events):
 
         # Compute features and score
         scores = scorer.compute_features(event)
-        final_score = FuzzySystem().makeRecommendation(
+        final_score, percent = FuzzySystem().makeRecommendation(
             price=scores['price'],
             distance=scores["distance"],
             popularity=scores["popularity"],
@@ -102,7 +96,7 @@ def display_event_tiles(events):
             length=scores["length"],
         )
 
-        st.markdown(f"**Final Score**: {final_score}")
+        st.markdown(f"**Final Score**: {final_score}, percent match: {percent:.2f}%")
 
 
 # Sample data (you can adjust this part)

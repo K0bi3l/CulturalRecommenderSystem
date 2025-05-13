@@ -15,20 +15,16 @@ class FuzzyScorer:
     All scores are normalized between 0.0 (worst match) and 1.0 (perfect match).
     """
 
-    def __init__(self, user, preferences, text_vectorizer=None, user_text_profile=None):
+    def __init__(self, user, preferences):
         """
         Initialize the FuzzyScorer with user data and preferences.
 
         Args:
             user: User object containing past event history and profile data
             preferences: Preferences object with user preference settings
-            text_vectorizer: Optional TfidfVectorizer for text similarity scoring
-            user_text_profile: Optional pre-computed user text profile vector
         """
         self.user = user
         self.preferences = preferences
-        self.text_vectorizer = text_vectorizer
-        self.user_text_profile = user_text_profile
 
     def normalize(self, value, min_val, max_val):
         """
@@ -116,7 +112,7 @@ class FuzzyScorer:
         if not self.preferences.preferred_times:
             return 0.5
 
-        best_score = 2**63 - 1
+        best_score = 2 ** 63 - 1
         for _, len in self.preferences.preferred_times:
             if len <= event.event_length:
                 return 1
@@ -126,31 +122,6 @@ class FuzzyScorer:
 
         max_diff = 1
         return max(0.0, 1 - best_score / max_diff)
-
-    def score_description(self, event):
-        """
-        Score text similarity between event description and user's profile.
-
-        Uses cosine similarity between TF-IDF vectors of text content.
-
-        Args:
-            event: Event object with description text
-
-        Returns:
-            Text similarity score between 0.0 and 1.0
-        """
-        if not self.text_vectorizer or self.user_text_profile is None:
-            return 0.5  # Default if text analysis not possible
-
-        # Transform event description to vector space
-        vec = self.text_vectorizer.transform([event.description]).toarray()[0]
-
-        # Calculate cosine similarity
-        num = vec.dot(self.user_text_profile)
-        den = math.sqrt(vec.dot(vec)) * math.sqrt(self.user_text_profile.dot(self.user_text_profile))
-
-        # Handle potential division by zero
-        return max(0.0, min(1.0, num / den)) if den else 0.5
 
     def compute_features(self, event):
         """

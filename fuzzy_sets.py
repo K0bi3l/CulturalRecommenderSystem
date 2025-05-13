@@ -28,31 +28,31 @@ class FuzzySystem:
     def create_sets(self):
         self.price_match['low'] = fuzz.trimf(self.price_match.universe, [0, 0, 0.4])
         self.price_match['medium'] = fuzz.trimf(self.price_match.universe, [0.2, 0.5, 0.8])
-        self.price_match['high'] = fuzz.trimf(self.price_match.universe, [0.65, 1, 1])
+        self.price_match['high'] = fuzz.trimf(self.price_match.universe, [0.6, 1, 1])
 
         self.distance_match['low'] = fuzz.trimf(self.distance_match.universe, [0, 0, 0.4])
         self.distance_match['medium'] = fuzz.trimf(self.distance_match.universe, [0.2, 0.5, 0.8])
-        self.distance_match['high'] = fuzz.trimf(self.distance_match.universe, [0.65, 1, 1])
+        self.distance_match['high'] = fuzz.trimf(self.distance_match.universe, [0.6, 1, 1])
 
         self.popularity_range['low'] = fuzz.trimf(self.popularity_range.universe, [0, 0, 0.4])
         self.popularity_range['medium'] = fuzz.trimf(self.popularity_range.universe, [0.2, 0.5, 0.8])
-        self.popularity_range['high'] = fuzz.trimf(self.popularity_range.universe, [0.65, 1, 1])
+        self.popularity_range['high'] = fuzz.trimf(self.popularity_range.universe, [0.6, 1, 1])
 
         self.interest_match['low'] = fuzz.trimf(self.interest_match.universe, [0, 0, 0.4])
         self.interest_match['medium'] = fuzz.trimf(self.interest_match.universe, [0.2, 0.5, 0.8])
-        self.interest_match['high'] = fuzz.trimf(self.interest_match.universe, [0.65, 1, 1])
+        self.interest_match['high'] = fuzz.trimf(self.interest_match.universe, [0.6, 1, 1])
 
         self.start_hour_match['low'] = fuzz.trimf(self.start_hour_match.universe, [0, 0, 0.4])
         self.start_hour_match['medium'] = fuzz.trimf(self.start_hour_match.universe, [0.2, 0.5, 0.8])
-        self.start_hour_match['high'] = fuzz.trimf(self.start_hour_match.universe, [0.65, 1, 1])
+        self.start_hour_match['high'] = fuzz.trimf(self.start_hour_match.universe, [0.6, 1, 1])
 
         self.length_match['low'] = fuzz.trimf(self.length_match.universe, [0, 0, 0.4])
         self.length_match['medium'] = fuzz.trimf(self.length_match.universe, [0.2, 0.5, 0.8])
-        self.length_match['high'] = fuzz.trimf(self.length_match.universe, [0.65, 1, 1])
+        self.length_match['high'] = fuzz.trimf(self.length_match.universe, [0.6, 1, 1])
 
-        self.recommendation_match['low'] = fuzz.trimf(self.recommendation_match.universe, [0, 0.1, 0.4])
-        self.recommendation_match['medium'] = fuzz.trimf(self.recommendation_match.universe, [0.2, 0.5, 0.8])
-        self.recommendation_match['high'] = fuzz.trimf(self.recommendation_match.universe, [0.7, 0.9, 1])
+        self.recommendation_match['low'] = fuzz.trimf(self.recommendation_match.universe, [0, 0.2, 0.4])
+        self.recommendation_match['medium'] = fuzz.trimf(self.recommendation_match.universe, [0.3, 0.5, 0.8])
+        self.recommendation_match['high'] = fuzz.trimf(self.recommendation_match.universe, [0.7, 1, 1])
 
     def create_rules(self):
         self.rules = [
@@ -124,7 +124,7 @@ class FuzzySystem:
         self.simulator.compute()
 
         output = self.simulator.output['recommendation_match']
-        return self.getRecommendationLabel(output)
+        return self.getRecommendationLabel(output), output * 100
 
     def getRecommendationLabel(self, output):
         low_membership = fuzz.interp_membership(
@@ -169,17 +169,10 @@ preferred_times = [
 # Define preferences
 prefs = Preferences(
     max_distance=10,  # Prefers events within 10 km
-    categories={"music": 0.9, "tech": 0.6, "science": 1.0},  # High interest in music, some in tech
+    categories={"music": 0.9, "tech": 0.6, "science": 1.0, "jazz": 0.0},  # High interest in music, some in tech
     preferred_times=preferred_times,
     budget=100,  # Budget constraints
-    attended_events=[past[0]]  # Already attended "Concert A"
 )
-prefs.attended_events.append(past[0])
-
-# Text vectorizer & profile
-vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform(user.text_profile_descriptions)
-user_text_profile = tfidf_matrix.mean(axis=0).A1  # 1D numpy array
 
 new_events = [
     Event("Jazz Night", "music", 45, 3, 75, "Smooth jazz evening with mellow tunes", 2,
@@ -189,25 +182,21 @@ new_events = [
     Event("XD event", "standup", 50, 1, 85, "Discuss AI trends and machine learning insights", 5,
           datetime.now().replace(hour=21)),
     Event("Best event", "science", 0, 0, 100, "BEST DESCRIPTION", 1.5,
-          datetime.now().replace(hour=20, minute=0, second=0, microsecond=0))
+          datetime.now().replace(hour=20, minute=0, second=0, microsecond=0)),
+    Event("Worst event", "jazz", 110, 11, 0, "The worst event possible",
+          3, datetime.now().replace(hour=2, minute=0, second=0, microsecond=0))
 ]
 
-# Print user and prefs\    print("User Profile:")
-print(f"  Mean Price: {user.mean_price:.2f}")
-print(f"  Mean Distance: {user.mean_distance:.2f}")
-print(f"  Mean Popularity: {user.mean_popularity:.2f}\n")
-print("User Text Profile Descriptions:")
-for desc in user.text_profile_descriptions:
-    print(f"  - {desc}")
-print()
 
+print("User Text Profile Descriptions:")
+print()
 print("User Preferences:")
 print(f"  Max Distance: {prefs.max_distance}")
 print(f"  Categories: {prefs.categories}")
 print(f"  Preferred Times: {prefs.preferred_times}")
 print(f"  Budget for Category: {prefs.budget}\n")
 
-scorer = FuzzyScorer.FuzzyScorer(user, prefs, text_vectorizer=vectorizer, user_text_profile=user_text_profile)
+scorer = FuzzyScorer.FuzzyScorer(user, prefs)
 for evt in new_events:
     print(f"Event: {evt.name}")
     print(f"  Description: {evt.description}")
