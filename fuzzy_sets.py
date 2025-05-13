@@ -160,7 +160,7 @@ past = [
     Event("Tech Talk", "tech", 60, 10, 70, "An insightful session on the latest in AI", 1.5,
           datetime.now().replace(hour=17))
 ]
-user = User(past, text_profile_descriptions=[e.description for e in past])
+user = User(past)
 preferred_times = [
     (datetime.now().replace(hour=18, minute=0, second=0, microsecond=0), 2),  # 6 PM for 2 hours
     (datetime.now().replace(hour=20, minute=0, second=0, microsecond=0), 1.5)  # 8 PM for 1.5 hours

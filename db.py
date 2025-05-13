@@ -19,7 +19,7 @@ class Event:
 
 
 class User:
-    def __init__(self, events, text_profile_descriptions):
+    def __init__(self, events):
         self.description = None
         self.mean_popularity = None
         self.mean_distance = None

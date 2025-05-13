@@ -15,7 +15,7 @@ past = [
           datetime.datetime.now().replace(hour=17))
 ]
 
-user = User(past, text_profile_descriptions=[e.description for e in past])
+user = User(past)
 
 preferred_times = [
     (datetime.datetime.now().replace(hour=18, minute=0, second=0, microsecond=0), 2),  # 6 PM for 2 hours
@@ -36,16 +36,31 @@ new_events = [
           datetime.datetime.now().replace(hour=18)),
     Event("AI Meetup", "tech", 120, 8, 85, "Discuss AI trends and machine learning insights", 5,
           datetime.datetime.now().replace(hour=20)),
-    Event("XD event", "standup", 50, 1, 85, "Discuss AI trends and machine learning insights", 5,
+    Event("Funny event", "standup", 50, 1, 85, "Discuss AI trends and machine learning insights", 5,
           datetime.datetime.now().replace(hour=21)),
     Event("Best event", "science", 0, 0, 100, "BEST DESCRIPTION", 1.5,
-          datetime.datetime.now().replace(hour=20, minute=0, second=0, microsecond=0))
+          datetime.datetime.now().replace(hour=20, minute=0, second=0, microsecond=0)),
+    Event("Worst event", "jazz", 110, 11, 0, "The worst event possible",
+          3, datetime.datetime.now().replace(hour=2, minute=0, second=0, microsecond=0))
 ]
 
 
 # Function to display events in tiles
 def display_event_tiles(events):
     st.title("Event List")
+
+    # Display user preferences
+    st.subheader("User Preferences")
+    st.markdown("### Categories of Interest")
+    for category, score in prefs.categories.items():
+        st.markdown(f"- **{category.capitalize()}**: {score:.2f}")
+
+    st.markdown("### Time Preferences")
+    for start_time, duration in prefs.preferred_times:
+        st.markdown(f"- **From** {start_time.strftime('%H:%M')} **for** {duration}h")
+
+    st.markdown(f"### Budget: **${prefs.budget}**")
+    st.markdown(f"### Max Distance: **{prefs.max_distance} km**")
 
     st.markdown(
         """
@@ -79,7 +94,7 @@ def display_event_tiles(events):
             <p><strong>Type:</strong> {event.type}</p>
             <p><strong>Price:</strong> ${event.price}</p>
             <p><strong>Distance:</strong> {event.distance} km</p>
-            <p><strong>Popularity:</strong> {event.popularity} / 10</p>
+            <p><strong>Popularity:</strong> {event.popularity}</p>
             <p><strong>Description:</strong> {event.description}</p>
         </div>
         <div class="divider"></div>
@@ -99,7 +114,8 @@ def display_event_tiles(events):
         st.markdown(f"**Final Score**: {final_score}, percent match: {percent:.2f}%")
 
 
-# Sample data (you can adjust this part)
+
+# Sample data
 events = [
     Event("Music Concert", "music", 50, 10, 8, "An exciting concert!", 2.5, datetime.datetime.now().replace(hour=19)),
     Event("Art Gallery", "art", 20, 5, 6, "An evening of beautiful art!", 2, datetime.datetime.now().replace(hour=18)),
