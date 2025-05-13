@@ -38,10 +38,8 @@ new_events = [
           datetime.datetime.now().replace(hour=20)),
     Event("Funny event", "standup", 50, 1, 85, "Discuss AI trends and machine learning insights", 5,
           datetime.datetime.now().replace(hour=21)),
-    Event("Best event", "science", 0, 0, 100, "BEST DESCRIPTION", 1.5,
-          datetime.datetime.now().replace(hour=20, minute=0, second=0, microsecond=0)),
-    Event("Worst event", "jazz", 110, 11, 0, "The worst event possible",
-          3, datetime.datetime.now().replace(hour=2, minute=0, second=0, microsecond=0))
+    Event("Best event", "science", 0, 0, 100, "Very attractive!", 1.5,
+          datetime.datetime.now().replace(hour=20, minute=0, second=0, microsecond=0))
 ]
 
 
@@ -96,6 +94,8 @@ def display_event_tiles(events):
             <p><strong>Distance:</strong> {event.distance} km</p>
             <p><strong>Popularity:</strong> {event.popularity}</p>
             <p><strong>Description:</strong> {event.description}</p>
+            <p><strong>Length:</strong> {event.event_length}</p>
+            <p><strong>Start hour:</strong> {event.start_hour.strftime("%H:%M")}</p>
         </div>
         <div class="divider"></div>
         """, unsafe_allow_html=True)

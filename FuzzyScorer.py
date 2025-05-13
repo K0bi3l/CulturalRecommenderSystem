@@ -74,7 +74,8 @@ class FuzzyScorer:
         md = self.preferences.max_distance
         if md <= 0:
             return 0.5  # Default if max_distance not set
-        # Inverse scoring: shorter distances get higher scores
+
+        # Shorter distances get higher scores
         return max(0.0, min(1.0, 1 - d / md))
 
     def score_start_hour(self, event):
@@ -114,7 +115,7 @@ class FuzzyScorer:
 
         best_score = 2 ** 63 - 1
         for _, len in self.preferences.preferred_times:
-            if len <= event.event_length:
+            if event.event_length <= len:
                 return 1
 
             diff = abs((event.event_length - len))
