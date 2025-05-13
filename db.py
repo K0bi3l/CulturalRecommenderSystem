@@ -43,17 +43,22 @@ class User:
 
 
 class Preferences:
-    def __init__(self):
+    def __init__(self,
+                 max_distance=50,
+                 categories=None,
+                 preferred_times=None,
+                 budget=None,
+                 attended_events=None):
         # Maximum distance in km
-        self.max_distance = 15
+        self.max_distance = max_distance
         # List of preferred categories with weights  e.g. {"music": 0.8, "jam session": 0.6}
-        self.categories = {}
+        self.categories = categories
         # List of (start_time, length)
-        self.preferred_times = []
-        # List of preferred price for category e.g. {"music": 50}
-        self.budget_for_category = {}
+        self.preferred_times = preferred_times
+        # Preferred price
+        self.budget = budget
         # List of earlier events
-        self.attended_events = []
+        self.attended_events = attended_events
 
     def is_in_preferred_time(self, event_start, event_length):
         # Proper overlap check
@@ -75,3 +80,4 @@ class Preferences:
 
     def get_category_interest(self, category):
         return self.categories.get(category, 0)
+

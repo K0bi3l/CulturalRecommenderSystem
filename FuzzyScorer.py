@@ -59,46 +59,10 @@ class FuzzyScorer:
         Returns:
             Interest score between 0.0 and 1.0
         """
-        base_sim = 1 - self._vector_similarity(event)  # Convert similarity to score (higher is better)
-        cat_weight = self.preferences.get_category_interest(event.type)
-        history = self._history_boost(event)
-        return base_sim * 0.6 + cat_weight * 0.3 + history * 0.1
-
-    def _vector_similarity(self, event):
-        """
-        Calculate Euclidean distance-based similarity between user profile and event.
-
-        Computes normalized distance in the feature space of price, distance, and popularity.
-
-        Args:
-            event: Event object to compare with user profile
-
-        Returns:
-            Normalized distance (lower means more similar)
-        """
-        u = [self.user.mean_price, self.user.mean_distance, self.user.mean_popularity]
-        e = event.get_vector()
-        # Calculate Euclidean distance between user profile and event vectors
-        dist = math.sqrt(sum((ui - ei) ** 2 for ui, ei in zip(u, e)))
-        # Calculate maximum possible distance for normalization
-        max_dist = math.sqrt(sum((max(ui, ei) or 1) ** 2 for ui, ei in zip(u, e)))
-        return self.normalize(dist, 0, max_dist)
-
-    def _history_boost(self, event):
-        """
-        Calculate boost factor based on how often user has attended similar category events.
-
-        Args:
-            event: Event object to calculate boost for
-
-        Returns:
-            Normalized boost factor between 0.0 and 1.0
-        """
-        counts = self.preferences.get_attended_category_counts()
-        if not counts:
-            return 0.0  # No history data
-        max_c = max(counts.values())
-        return self.normalize(counts.get(event.type, 0), 0, max_c)
+        categories = self.preferences.categories
+        if event.type in categories:
+            return self.preferences.categories[event.type]
+        return 0
 
     def score_distance(self, event):
         """
@@ -129,12 +93,15 @@ class FuzzyScorer:
         """
         # Normalize how close the event start is to the user's preferred time window start
         if not self.preferences.preferred_times:
-            return 0.5  # Default if no preferred times set
-        pref_start, _ = self.preferences.preferred_times[0]
-        # Calculate time difference in hours
-        diff = abs((event.start_hour - pref_start).total_seconds()) / 3600.0
-        # Assuming user cares within +/-3 hours (adjust this tolerance as needed)
-        return max(0.0, min(1.0, 1 - self.normalize(diff, 0, 3)))
+            return 0.5
+
+        best_score = 0.0
+        for pref_start, _ in self.preferences.preferred_times:
+            diff = abs((event.start_hour - pref_start).total_seconds()) / 3600.0
+            score = max(0.0, min(1.0, 1 - self.normalize(diff, 0, 3)))
+            best_score = max(best_score, score)
+
+        return max(0.0, best_score)
 
     def score_length(self, event):
         """
@@ -146,11 +113,19 @@ class FuzzyScorer:
         Returns:
             Length score between 0.0 and 1.0
         """
-        # Calculate average length of past events user has attended
-        avg_len = sum(e.event_length for e in self.user.events) / len(
-            self.user.events) if self.user.events else event.event_length
-        # Score based on how close this event's length is to that average
-        return max(0.0, min(1.0, 1 - self.normalize(abs(event.event_length - avg_len), 0, avg_len or 1)))
+        if not self.preferences.preferred_times:
+            return 0.5
+
+        best_score = 2**63 - 1
+        for _, len in self.preferences.preferred_times:
+            if len <= event.event_length:
+                return 1
+
+            diff = abs((event.event_length - len))
+            best_score = min(best_score, diff)
+
+        max_diff = 1
+        return max(0.0, 1 - best_score / max_diff)
 
     def score_description(self, event):
         """
@@ -213,11 +188,7 @@ class FuzzyScorer:
             Budget score between 0.0 and 1.0 (1.0 = best value)
         """
         cost = event.price
-        # Get budget from preferences, with fallback to global budget
-        max_b = self.preferences.budget_for_category.get(
-            event.type,
-            self.preferences.budget_for_category.get("global", 0)
-        )
+        max_b = self.preferences.budget
 
         # Free events always get top score
         if cost <= 0:
@@ -229,8 +200,3 @@ class FuzzyScorer:
 
         # Higher score for lower price relative to budget
         return max(0.0, min(1.0, 1 - cost / max_b))
-
-
-if __name__ == "__main__":
-    # Test code can be added here
-    pass

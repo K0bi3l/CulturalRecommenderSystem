@@ -1,9 +1,11 @@
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
-from FuzzyScorer import FuzzyScorer
-from db import User, Preferences, Event
+import FuzzyScorer
+from db import Event, User, Preferences
 from datetime import datetime, timedelta
+
+# Optional: for text vectorization
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
@@ -155,11 +157,23 @@ class FuzzySystem:
 past = [
     Event("Concert A", "music", 40, 5, 80, "A vibrant musical night with upbeat vibes", 3,
           datetime.now().replace(hour=19)),
-    Event("Tech Talk", "tech", 0, 0, 1000, "An insightful session on the latest in AI", 1,
+    Event("Tech Talk", "tech", 60, 10, 70, "An insightful session on the latest in AI", 1.5,
           datetime.now().replace(hour=17))
 ]
 user = User(past, text_profile_descriptions=[e.description for e in past])
-prefs = Preferences()
+preferred_times = [
+    (datetime.now().replace(hour=18, minute=0, second=0, microsecond=0), 2),  # 6 PM for 2 hours
+    (datetime.now().replace(hour=20, minute=0, second=0, microsecond=0), 1.5)  # 8 PM for 1.5 hours
+]
+
+# Define preferences
+prefs = Preferences(
+    max_distance=10,  # Prefers events within 10 km
+    categories={"music": 0.9, "tech": 0.6, "science": 1.0},  # High interest in music, some in tech
+    preferred_times=preferred_times,
+    budget=100,  # Budget constraints
+    attended_events=[past[0]]  # Already attended "Concert A"
+)
 prefs.attended_events.append(past[0])
 
 # Text vectorizer & profile
@@ -170,12 +184,30 @@ user_text_profile = tfidf_matrix.mean(axis=0).A1  # 1D numpy array
 new_events = [
     Event("Jazz Night", "music", 45, 3, 75, "Smooth jazz evening with mellow tunes", 2,
           datetime.now().replace(hour=18)),
-    Event("AI Meetup", "tech", 3, 0, 150, "Discuss AI trends and machine learning insights", 0.5,
-          datetime.now().replace(hour=18))
+    Event("AI Meetup", "tech", 120, 8, 85, "Discuss AI trends and machine learning insights", 5,
+          datetime.now().replace(hour=20)),
+    Event("XD event", "standup", 50, 1, 85, "Discuss AI trends and machine learning insights", 5,
+          datetime.now().replace(hour=21)),
+    Event("Best event", "science", 0, 0, 100, "BEST DESCRIPTION", 1.5,
+          datetime.now().replace(hour=20, minute=0, second=0, microsecond=0))
 ]
 
+# Print user and prefs\    print("User Profile:")
+print(f"  Mean Price: {user.mean_price:.2f}")
+print(f"  Mean Distance: {user.mean_distance:.2f}")
+print(f"  Mean Popularity: {user.mean_popularity:.2f}\n")
+print("User Text Profile Descriptions:")
+for desc in user.text_profile_descriptions:
+    print(f"  - {desc}")
+print()
 
-scorer = FuzzyScorer(user, prefs, text_vectorizer=vectorizer, user_text_profile=user_text_profile)
+print("User Preferences:")
+print(f"  Max Distance: {prefs.max_distance}")
+print(f"  Categories: {prefs.categories}")
+print(f"  Preferred Times: {prefs.preferred_times}")
+print(f"  Budget for Category: {prefs.budget}\n")
+
+scorer = FuzzyScorer.FuzzyScorer(user, prefs, text_vectorizer=vectorizer, user_text_profile=user_text_profile)
 for evt in new_events:
     print(f"Event: {evt.name}")
     print(f"  Description: {evt.description}")
@@ -184,12 +216,12 @@ for evt in new_events:
     print(scores)
 
     final_score = FuzzySystem().makeRecommendation(
-        price=1,
-        distance=0.5,
-        popularity=0.50,
-        interest=1,
-        start_hour=0.90,
-        length=1,
+        price=scores['price'],
+        distance=scores["distance"],
+        popularity=scores["popularity"],
+        interest=scores["interest"],
+        start_hour=scores["start_hour"],
+        length=scores["length"],
     )
-    print(f"  Final Recommendation Score: {final_score}")
+    print(final_score)
     print()
